@@ -46,6 +46,11 @@ public class Db2SourceOperations extends JdbcSourceOperations {
       } else {
         throw new SQLException(e.getCause());
       }
+    } catch (NullPointerException e) {
+      //the statement !queryContext.wasNull() returns false for Date columns even if they are null
+      if (!queryContext.getMetaData().getColumnTypeName(index).equals("DATE") && queryContext.getDate(index) != null){
+        throw e;
+      }
     }
   }
 
