@@ -12,6 +12,7 @@ public enum DatabaseDriver {
   CLICKHOUSE("com.clickhouse.jdbc.ClickHouseDriver", "jdbc:clickhouse:%s://%s:%d/%s"),
   DATABRICKS("com.databricks.client.jdbc.Driver", "jdbc:databricks://%s;HttpPath=%s;SSL=1;UserAgentEntry=Airbyte"),
   DB2("com.ibm.db2.jcc.DB2Driver", "jdbc:db2://%s:%d/%s"),
+  AS400("com.ibm.as400.access.AS400JDBCDriver", "jdbc:as400://%s:%d/%s"),
   MARIADB("org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s"),
   MSSQLSERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d/%s"),
   MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s"),

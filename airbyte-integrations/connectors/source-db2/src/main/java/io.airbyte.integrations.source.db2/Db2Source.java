@@ -8,11 +8,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.integrations.base.IntegrationCliParser;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -30,6 +32,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.CommonField;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,17 +43,24 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2Source.class);
   public static final String DRIVER_CLASS = DatabaseDriver.DB2.getDriverClassName();
+  public static final String DRIVER_CLASS_AS400 = DatabaseDriver.AS400.getDriverClassName();
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
+  private String schema;
+
   public Db2Source() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new Db2SourceOperations());
   }
 
+  public Db2Source(String driverClass) {
+    super(driverClass, AdaptiveStreamingQueryConfig::new, new Db2SourceOperations());
+  }
+
   public static void main(final String[] args) throws Exception {
-    final Source source = new Db2Source();
+    final Source source = getSourceForDriver(args);
     LOGGER.info("starting source: {}", Db2Source.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", Db2Source.class);
@@ -56,16 +68,20 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.DB2.getUrlFormatString(),
-        config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get(JdbcUtils.PORT_KEY).asInt(),
-        config.get("db").asText()));
+    String jdbcUrlTemplate = checkIfAs400(config)
+            ?DatabaseDriver.AS400.getUrlFormatString():DatabaseDriver.DB2.getUrlFormatString();
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(jdbcUrlTemplate,
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get("db").asText()));
 
     var result = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
-        .build());
+            .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
+            .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+            .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
+            .build());
+
+    schema = config.get("db").asText();
 
     // assume ssl if not explicitly mentioned.
     final var additionalParams = obtainConnectionOptions(config.get(JdbcUtils.ENCRYPTION_KEY));
@@ -73,11 +89,11 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
       jdbcUrl.append(":").append(String.join(";", additionalParams));
       jdbcUrl.append(";");
       result = Jsons.jsonNode(ImmutableMap.builder()
-          .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
-          .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-          .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
-          .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParams)
-          .build());
+              .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
+              .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+              .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
+              .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParams)
+              .build());
     }
 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
@@ -90,14 +106,26 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
-        "NULLID", "SYSCAT", "SQLJ", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",
-        "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
+            "NULLID", "SYSCAT", "SQLJ", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",
+            "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS", "QSYS2", "QSYS");
+  }
+
+  @Override
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    LOGGER.debug("Discovering schema: {}", schema);
+    return super.discoverInternal(database, schema);
   }
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
-    try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(), sourceOperations::rowToJson)) {
-      return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
+    if(checkIfAs400(database.getSourceConfig())) {
+      try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivilegesForAS400(), sourceOperations::rowToJson)) {
+        return stream.map(this::getPrivilegeDtoAs400).collect(Collectors.toSet());
+      }
+    } else {
+      try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(), sourceOperations::rowToJson)) {
+        return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
+      }
     }
   }
 
@@ -116,16 +144,48 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
     return "RECORD_COUNT";
   }
 
+  private static Source getSourceForDriver(String[] args){
+    //toDO rework
+    if (args[0].equals("--spec")){
+      return new Db2Source();
+    }
+    IntegrationCliParser cliParser = new IntegrationCliParser();
+    JsonNode config = Jsons.deserialize(IOs.readFile(cliParser.parse(args).getConfigPath()));
+    return checkIfAs400(config)?new Db2Source(DRIVER_CLASS_AS400):new Db2Source();
+  }
+
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
     return connection -> connection.prepareStatement(
-        "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
+            "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT' AND AUTHID = SESSION_USER");
+  }
+
+  private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivilegesForAS400() {
+    return connection -> connection.prepareStatement(String.format(
+            """
+                SELECT DISTINCT auth.TABLE_NAME,
+                        auth.TABLE_SCHEMA
+                  FROM QSYS2.SYSTABAUTH auth
+                  LEFT JOIN QSYS2.TABLES tables ON
+                      auth.TABLE_NAME = tables.TABLE_NAME
+                WHERE auth.SYSTEM_TABLE_SCHEMA = '%s'
+                  AND auth.PRIVILEGE_TYPE = 'SELECT'
+                  AND auth.GRANTEE IN (USER, 'PUBLIC', 'PUBLIC*')
+                  AND tables.TABLE_TYPE = 'BASE TABLE'
+                """, schema));
   }
 
   private JdbcPrivilegeDto getPrivilegeDto(final JsonNode jsonNode) {
     return JdbcPrivilegeDto.builder()
-        .schemaName(jsonNode.get("OBJECTSCHEMA").asText().trim())
-        .tableName(jsonNode.get("OBJECTNAME").asText())
-        .build();
+            .schemaName(jsonNode.get("OBJECTSCHEMA").asText().trim())
+            .tableName(jsonNode.get("OBJECTNAME").asText())
+            .build();
+  }
+
+  private JdbcPrivilegeDto getPrivilegeDtoAs400(final JsonNode jsonNode) {
+    return JdbcPrivilegeDto.builder()
+            .schemaName(jsonNode.get("TABLE_SCHEMA").asText().trim())
+            .tableName(jsonNode.get("TABLE_NAME").asText())
+            .build();
   }
 
   /* Helpers */
@@ -175,6 +235,10 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
+  }
+
+  private static boolean checkIfAs400(JsonNode config){
+    return config.get("environment").get("server_environment").asText().equals("AS400");
   }
 
 }
