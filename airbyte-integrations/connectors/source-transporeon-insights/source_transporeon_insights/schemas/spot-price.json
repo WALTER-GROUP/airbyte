@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "from_lvl1": {
+      "type": "string"
+    },
+    "to_lvl1": {
+      "type": "string"
+    },
+    "from_lvl2": {
+      "type": "string"
+    },
+    "to_lvl2": {
+      "type": "string"
+    },
+    "timeseries": {
+      "type": "array",
+      "items": [
+        {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        }
+      ]
+    },
+    "distance": {
+      "type": "integer"
+    },
+    "is_forecasted": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "from_lvl1",
+    "to_lvl1",
+    "timeseries",
+    "is_forecasted"
+  ]
+}
