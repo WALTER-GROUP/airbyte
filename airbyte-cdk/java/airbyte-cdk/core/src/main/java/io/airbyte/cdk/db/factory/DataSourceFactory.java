@@ -305,6 +305,10 @@ public class DataSourceFactory {
       config.setConnectionTimeout(connectionTimeoutMs);
       config.setPassword(password);
       config.setUsername(username);
+      //toDo find better way to do this
+      if (databaseDriver.getDriverClassName().equals("com.ibm.as400.access.AS400JDBCDriver")){
+        config.setConnectionTestQuery("values 1");
+      }
 
       /*
        * Disable to prevent failing on startup. Applications may start prior to the database container
