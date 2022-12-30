@@ -1,10 +1,11 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+from typing import Tuple, List
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import *
 
@@ -37,9 +38,17 @@ class SourceTransporeonInsights(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        #@staticmethod
-        #def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
-
-        pass
+        auth = TokenAuthenticator(token=config["bearer_token"])
+        return [CapacityIndex(authenticator=auth, config=config),
+                ContractPrice(authenticator=auth, config=config),
+                ContractPriceIndex(authenticator=auth, config=config),
+                ContractRejectionrate(authenticator=auth, config=config),
+                CostIndex(authenticator=auth, config=config),
+                CostIndexFactors(authenticator=auth, config=config),
+                DieselPrice(authenticator=auth, config=config),
+                SpotOfferIndex(authenticator=auth, config=config),
+                SpotPrice(authenticator=auth, config=config),
+                SpotPriceIndex(authenticator=auth, config=config),
+                TotalPriceIndex(authenticator=auth, config=config),
+                ]
