@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime, timedelta
-from typing import List, Union
+from typing import List
 
 import requests
 from abc import ABC, abstractmethod
@@ -17,14 +17,19 @@ from airbyte_cdk.sources.streams import IncrementalMixin
 class TransporeonInsightsStream(HttpStream, ABC):
     url_base = "https://insights.transporeon.com/v1/"
 
-    def __init__(self, config: Mapping[str, Any], **kwargs):
-        super().__init__()
+    def __init__(self, config: Mapping[str, Any], authenticator, **kwargs):
+        super().__init__(authenticator=authenticator)
         self.bearer_token = config['bearer_token']
         self.frequency = config['frequency']
         self.from_loading_start_date = config['from_loading_start_date']
-        self.lanes = self.parse_string(config["lanes"]) \
-            if config["lanes"] != "ALL" and config['lanes_lvl2'] else self.get_lanes(config, self.metric)
         self.lanes_lvl2 = config['lanes_lvl2']
+        self.lanes = {
+            'from_lvl1': 'ALL',
+            'to_lvl1': 'ALL',
+            'from_lvl2': 'ALL',
+            'to_lvl2': 'ALL',
+        } \
+            if type(config['lanes']["lane"]) is bool and not config['lanes_lvl2'] else self.get_lanes(config, self.metric)
 
     @property
     @abstractmethod
@@ -77,7 +82,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
             raise
 
         available_lanes = self.filter_lanes(available_lanes, self.lanes_lvl2)
-        if config["lanes"] == "ALL":
+        if type(config["lanes"]["lane"]) is bool:
             return available_lanes
         else:
             parsed_lanes = self.parse_string(config["lanes"])
@@ -112,8 +117,8 @@ class TransporeonInsightsStream(HttpStream, ABC):
 
 class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, IncrementalMixin, ABC):
 
-    def __init__(self, config: Mapping[str, Any], **kwargs):
-        super().__init__(config, kwargs)
+    def __init__(self, config: Mapping[str, Any], authenticator, **kwargs):
+        super().__init__(config, authenticator, **kwargs)
         self._cursor_value = None
 
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
@@ -205,7 +210,7 @@ class ContractPriceIndex(IncrementalTransporeonInsightsStream):
         return "contract-price-index"
 
 
-class ContractRejectionrate(IncrementalTransporeonInsightsStream):
+class ContractRejectionRate(IncrementalTransporeonInsightsStream):
 
     @property
     def metric(self) -> str:
@@ -223,7 +228,7 @@ class CostIndexFactors(IncrementalTransporeonInsightsStream):
 
     @property
     def metric(self) -> str:
-        return "const-index-factors"
+        return "cost-index-factors"
 
 
 class DieselPrice(IncrementalTransporeonInsightsStream):
@@ -237,7 +242,7 @@ class SpotOfferIndex(IncrementalTransporeonInsightsStream):
 
     @property
     def metric(self) -> str:
-        return "spot-offer-index"
+        return "spot-offers-index"
 
 
 class SpotPrice(IncrementalTransporeonInsightsStream):
