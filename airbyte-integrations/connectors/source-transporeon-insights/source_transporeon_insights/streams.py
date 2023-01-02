@@ -1,14 +1,16 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Union
 
 import requests
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams import IncrementalMixin
 
 
 # Basic full refresh stream
@@ -102,42 +104,46 @@ class TransporeonInsightsStream(HttpStream, ABC):
                 } | lane
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # toDO change this to enable split entries
-        yield response.json()
+        data = response.json()
+        values = {k: v for k, v in data.items() if k != "timeseries"}
+        ts_data = data.get("timeseries", [])
+        yield [[values, {self.metric: e[1]}, {"date": e[0]}] for e in ts_data]
 
 
-# Basic incremental stream
-class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
+class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, IncrementalMixin, ABC):
+
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__(config, kwargs)
+        self._cursor_value = None
 
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
+    primary_key = None
+    date_format = '%Y-%m-%d'
 
     @property
     def cursor_field(self) -> str:
-        return "from_time"
+        return "date"
 
     @property
     def state(self) -> Mapping[str, Any]:
         if self._cursor_value:
-            return {self.cursor_field: self._cursor_value.strftime('%Y-%m-%d')}
+            return {self.cursor_field: self._cursor_value.strftime(self.date_format)}
         else:
-            return {self.cursor_field: self.start_date.strftime('%Y-%m-%d')}
+            return {self.cursor_field: self.from_loading_start_date.strftime(self.date_format)}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(value[self.cursor_field], '%Y-%m-%d')
+        self._cursor_value = datetime.strptime(value[self.cursor_field], self.date_format)
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             if self._cursor_value:
-                latest_record_date = datetime.strptime(record[self.cursor_field], '%Y-%m-%d')
+                latest_record_date = datetime.strptime(record[self.cursor_field], self.date_format)
                 self._cursor_value = max(self._cursor_value, latest_record_date)
             yield record
 
+    #toDo rework
     def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
         """
         Returns a list of each day between the start date and now.
@@ -145,23 +151,15 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, ABC):
         """
         dates = []
         while start_date < datetime.now():
-            dates.append({self.cursor_field: start_date.strftime('%Y-%m-%d')})
-            start_date += timedelta(days=1)
+            dates.append({self.cursor_field: start_date.strftime(self.date_format)})
+            start_date += timedelta(days=30)
         return dates
 
-    # toDo slice after every lane
-    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[
-        Optional[Mapping[str, Any]]]:
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) ->\
+            Iterable[Optional[Mapping[str, Any]]]:
         start_date = datetime.strptime(stream_state[self.cursor_field],
-                                       '%Y-%m-%d') if stream_state and self.cursor_field in stream_state else self.start_date
+                                       self.date_format) if stream_state and self.cursor_field in stream_state else self.from_loading_start_date
         return self._chunk_date_range(start_date)
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return {}
 
 
 class CapacityIndex(IncrementalTransporeonInsightsStream):
