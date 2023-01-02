@@ -43,9 +43,9 @@ connectionSpecification:
           type: object
           properties:
             lane:
-              type: string
+              type: boolean
               description: Get data for all lanes.
-              const: "ALL"
+              const: true
         - title: SPECIFIC
           type: object
           properties:
@@ -57,14 +57,15 @@ connectionSpecification:
                 List of specific lanes to be loaded. 
                 Format "<from>-<to>" eg. BE-DE, seperated by comma
               type: string
+              pattern: ^([A-Z]{2}-[A-Z]{2}, )*[A-Z]{2}-[A-Z]{2}$
               multiline: true
       default:
         title: ALL
         type: object
         properties:
-          url_base:
-            type: string
-            const: "ALL"
+          lane:
+            type: boolean
+            const: true
       order: 3
     lanes_lvl2:
       title: Include lvl2 lanes

@@ -43,7 +43,7 @@ class SourceTransporeonInsights(AbstractSource):
         return [CapacityIndex(authenticator=auth, config=config),
                 ContractPrice(authenticator=auth, config=config),
                 ContractPriceIndex(authenticator=auth, config=config),
-                ContractRejectionrate(authenticator=auth, config=config),
+                ContractRejectionRate(authenticator=auth, config=config),
                 CostIndex(authenticator=auth, config=config),
                 CostIndexFactors(authenticator=auth, config=config),
                 DieselPrice(authenticator=auth, config=config),
