@@ -14,30 +14,14 @@
     "to_lvl2": {
       "type": "string"
     },
-    "timeseries": {
-      "type": "array",
-      "items": [
-        {
-          "type": "array",
-          "items": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      ]
+    "spot-offer-spread": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
     },
     "is_forecasted": {
       "type": "string"
     }
-  },
-  "required": [
-    "from_lvl1",
-    "to_lvl1",
-    "timeseries",
-    "is_forecasted"
-  ]
+  }
 }

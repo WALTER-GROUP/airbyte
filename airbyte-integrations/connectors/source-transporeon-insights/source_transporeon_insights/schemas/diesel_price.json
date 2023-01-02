@@ -14,26 +14,11 @@
     "to_lvl2": {
       "type": "string"
     },
-    "timeseries": {
-      "type": "array",
-      "items": [
-        {
-          "type": "array",
-          "items": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      ]
+    "diesel_price": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
     }
-  },
-  "required": [
-    "from_lvl1",
-    "to_lvl1",
-    "timeseries"
-  ]
+  }
 }

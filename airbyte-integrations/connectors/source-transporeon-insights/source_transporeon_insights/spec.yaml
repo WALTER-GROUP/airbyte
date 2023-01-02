@@ -36,7 +36,8 @@ connectionSpecification:
       default: monthly
       order: 2
     lanes:
-      title: Lanes for which the data is to be fetched. Specific lanes are only supported for some metrics.
+      title: Lanes
+      description: Lanes for which the data is to be fetched. Specific lanes are only supported for some metrics.
       type: object
       oneOf:
         - title: ALL
@@ -50,8 +51,6 @@ connectionSpecification:
           type: object
           properties:
             lane:
-              type: string
-            lanes_list:
               title: List of lanes
               description: |
                 List of specific lanes to be loaded. 
@@ -59,13 +58,6 @@ connectionSpecification:
               type: string
               pattern: ^([A-Z]{2}-[A-Z]{2}, )*[A-Z]{2}-[A-Z]{2}$
               multiline: true
-      default:
-        title: ALL
-        type: object
-        properties:
-          lane:
-            type: boolean
-            const: true
       order: 3
     lanes_lvl2:
       title: Include lvl2 lanes

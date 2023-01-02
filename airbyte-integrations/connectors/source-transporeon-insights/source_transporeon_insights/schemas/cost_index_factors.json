@@ -14,21 +14,11 @@
     "to_lvl2": {
       "type": "string"
     },
-    "timeseries": {
-      "type": "array",
-      "items": [
-        {
-          "type": "array",
-          "items": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      ]
+    "contract-price-index": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
     },
     "distance": {
       "type": "number"
@@ -151,12 +141,5 @@
         }
       ]
     }
-  },
-  "required": [
-    "from_lvl1",
-    "to_lvl1",
-    "timeseries",
-    "is_forecasted",
-    "metadata"
-  ]
+  }
 }
