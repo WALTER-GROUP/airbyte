@@ -8,6 +8,7 @@ connectionSpecification:
     - from_loading_start_date
     - frequency
     - lanes
+    - lane
     - lanes_lvl2
   properties:
     bearer_token:
