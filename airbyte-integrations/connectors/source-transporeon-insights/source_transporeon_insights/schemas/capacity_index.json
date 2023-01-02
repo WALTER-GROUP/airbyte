@@ -14,24 +14,11 @@
     "to_lvl2": {
       "type": "string"
     },
-    "timeseries": {
-      "type": "array",
-      "items": [
-        {
-          "type": "array",
-          "items": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      ]
+    "capacity-index": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
     }
-  },
-  "required": [
-    "timeseries"
-  ]
+  }
 }

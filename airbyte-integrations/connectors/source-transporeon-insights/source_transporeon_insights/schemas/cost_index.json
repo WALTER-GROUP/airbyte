@@ -14,21 +14,11 @@
     "to_lvl2": {
       "type": "string"
     },
-    "timeseries": {
-      "type": "array",
-      "items": [
-        {
-          "type": "array",
-          "items": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "number"
-            }
-          ]
-        }
-      ]
+    "cost-index": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
     },
     "distance": {
       "type": "integer"
@@ -36,11 +26,5 @@
     "is_forecasted": {
       "type": "string"
     }
-  },
-  "required": [
-    "from_lvl1",
-    "to_lvl1",
-    "timeseries",
-    "is_forecasted"
-  ]
+  }
 }
