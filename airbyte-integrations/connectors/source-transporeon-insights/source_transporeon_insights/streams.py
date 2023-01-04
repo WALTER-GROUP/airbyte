@@ -14,9 +14,7 @@ from airbyte_cdk.sources.streams import IncrementalMixin
 from .lane_handler import parse_input_list, get_lanes
 
 
-# Basic full refresh stream
 class TransporeonInsightsStream(HttpStream, ABC):
-    url_base = "https://insights.transporeon.com/v1/"
 
     def __init__(self, config: Mapping[str, Any], authenticator, **kwargs):
         super().__init__(authenticator=authenticator)
@@ -28,6 +26,10 @@ class TransporeonInsightsStream(HttpStream, ABC):
             else get_lanes(config, self.metric)
 
     @property
+    def url_base(self) -> str:
+        return "https://insights.transporeon.com/v1/"
+
+    @property
     @abstractmethod
     def metric(self) -> str:
         """
@@ -36,12 +38,11 @@ class TransporeonInsightsStream(HttpStream, ABC):
 
     def pop_lane_from_list(self) -> dict:
         lane = self.lanes.pop()
-        return {
-            'from_lvl1': lane[0].value(),
-            'to_lvl1': lane[1].value(),
-            'from_lvl2': lane[2].value(),
-            'to_lvl2': lane[3].value()
-        }
+        lane_query_params = {}
+        for key in ['from_lvl1', 'to_lvl1', 'from_lvl2', 'to_lvl2']:
+            if key in lane:
+                lane_query_params[key] = lane[key]
+        return lane_query_params
 
     # toDo check if this is the optimal way to handle lists
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -49,7 +50,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
             lane = self.pop_lane_from_list()
             return {'frequency': self.frequency,
                     'from_time': self.from_loading_start_date,
-                    'to_time': datetime.today().isoformat(),
+                    'to_time': str(datetime.today().date()),
                     } | lane
         else:
             return None
@@ -60,7 +61,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"/metrics/{self.metric}/lane"
+        return f"metrics/{self.metric}/lane"
 
     def request_params(
             self,
@@ -71,7 +72,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
         lane = self.pop_lane_from_list()
         return {'frequency': self.frequency,
                 'from_time': self.from_loading_start_date,
-                'to_time': datetime.today().isoformat(),
+                'to_time': str(datetime.today().date()),
                 } | lane
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -114,22 +115,22 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
             yield record
 
     #toDo rework
-    def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
-        """
-        Returns a list of each day between the start date and now.
-        The return value is a list of dicts {'date': date_string}.
-        """
-        dates = []
-        while start_date < datetime.now():
-            dates.append({self.cursor_field: start_date.strftime(self.date_format)})
-            start_date += timedelta(days=30)
-        return dates
-
-    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) ->\
-            Iterable[Optional[Mapping[str, Any]]]:
-        start_date = datetime.strptime(stream_state[self.cursor_field],
-                                       self.date_format) if stream_state and self.cursor_field in stream_state else self.from_loading_start_date
-        return self._chunk_date_range(start_date)
+    # def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
+    #     """
+    #     Returns a list of each day between the start date and now.
+    #     The return value is a list of dicts {'date': date_string}.
+    #     """
+    #     dates = []
+    #     while start_date < datetime.now():
+    #         dates.append({self.cursor_field: start_date.strftime(self.date_format)})
+    #         start_date += timedelta(days=30)
+    #     return dates
+    #
+    # def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) ->\
+    #         Iterable[Optional[Mapping[str, Any]]]:
+    #     start_date = datetime.strptime(stream_state[self.cursor_field],
+    #                                    self.date_format) if stream_state and self.cursor_field in stream_state else self.from_loading_start_date
+    #     return self._chunk_date_range(start_date)
 
 
 class CapacityIndex(IncrementalTransporeonInsightsStream):

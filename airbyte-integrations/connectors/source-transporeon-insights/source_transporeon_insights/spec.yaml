@@ -8,7 +8,6 @@ connectionSpecification:
     - from_loading_start_date
     - frequency
     - lanes
-    - lane
     - lanes_lvl2
   properties:
     bearer_token:
@@ -43,6 +42,8 @@ connectionSpecification:
       oneOf:
         - title: ALL
           type: object
+          required:
+            - lane
           properties:
             lane:
               type: boolean
@@ -50,6 +51,8 @@ connectionSpecification:
               const: true
         - title: SPECIFIC
           type: object
+          required:
+            - lane
           properties:
             lane:
               title: List of lanes
