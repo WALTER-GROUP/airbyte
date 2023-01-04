@@ -79,7 +79,8 @@ class TransporeonInsightsStream(HttpStream, ABC):
         data = response.json()
         values = {k: v for k, v in data.items() if k != "timeseries"}
         ts_data = data.get("timeseries", [])
-        yield [[values, {self.metric: e[1]}, {"date": e[0]}] for e in ts_data]
+        for e in ts_data:
+            yield values | {self.metric: e[1]} | {"date": e[0]}
 
 
 class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, IncrementalMixin, ABC):
