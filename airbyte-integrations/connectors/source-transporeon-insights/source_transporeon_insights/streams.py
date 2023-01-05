@@ -20,7 +20,8 @@ class TransporeonInsightsStream(HttpStream, ABC):
         super().__init__(authenticator=authenticator)
         self.bearer_token = config['bearer_token']
         self.frequency = config['frequency']
-        self.from_loading_start_date = config['from_loading_start_date']
+        self.parsed_from_date = config['from_loading_start_date']
+        self.to_date = str(datetime.today().date())
         self.lanes_lvl2 = config['lanes_lvl2']
         self.lanes = parse_input_list(config['lanes']['lane']) if type(config['lanes']['lane']) is not bool and not config['lanes_lvl2'] \
             else get_lanes(config, self.metric)
@@ -28,6 +29,10 @@ class TransporeonInsightsStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return "https://insights.transporeon.com/v1/"
+
+    @property
+    def from_date(self) -> Mapping[str, Any]:
+        return self.parsed_from_date
 
     @property
     @abstractmethod
@@ -49,8 +54,8 @@ class TransporeonInsightsStream(HttpStream, ABC):
         if bool(self.lanes):
             lane = self.pop_lane_from_list()
             return {'frequency': self.frequency,
-                    'from_time': self.from_loading_start_date,
-                    'to_time': str(datetime.today().date()),
+                    'from_time': self.from_date,
+                    'to_time': self.to_date,
                     } | lane
         else:
             return None
@@ -71,8 +76,8 @@ class TransporeonInsightsStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         lane = self.pop_lane_from_list()
         return {'frequency': self.frequency,
-                'from_time': self.from_loading_start_date,
-                'to_time': str(datetime.today().date()),
+                'from_time': self.from_date,
+                'to_time': self.to_date,
                 } | lane
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -88,6 +93,7 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
     def __init__(self, config: Mapping[str, Any], authenticator, **kwargs):
         super().__init__(config, authenticator, **kwargs)
         self._cursor_value = None
+        self.initial_state = None
 
     state_checkpoint_interval = None
     primary_key = None
@@ -98,20 +104,29 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
         return "date"
 
     @property
+    def from_date(self) -> Mapping[str, Any]:
+        if self.initial_state:
+            return self.initial_state
+        else:
+            return self.parsed_from_date
+
+    @property
     def state(self) -> Mapping[str, Any]:
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value.strftime(self.date_format)}
         else:
-            return {self.cursor_field: self.from_loading_start_date.strftime(self.date_format)}
+            return {self.cursor_field: datetime.strptime(self.to_date, self.date_format).date()}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(value[self.cursor_field], self.date_format)
+        initial_state = datetime.strptime(value[self.cursor_field], self.date_format).date()
+        self.initial_state = initial_state
+        self._cursor_value = initial_state
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             if self._cursor_value:
-                latest_record_date = datetime.strptime(record[self.cursor_field], self.date_format)
+                latest_record_date = datetime.strptime(record[self.cursor_field], self.date_format).date()
                 self._cursor_value = max(self._cursor_value, latest_record_date)
             yield record
 
