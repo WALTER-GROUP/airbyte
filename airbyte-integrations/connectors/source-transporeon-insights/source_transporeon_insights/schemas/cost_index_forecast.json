@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "from_lvl1": {
+      "type": "string"
+    },
+    "to_lvl1": {
+      "type": "string"
+    },
+    "from_lvl2": {
+      "type": "string"
+    },
+    "to_lvl2": {
+      "type": "string"
+    },
+    "cost-index": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
+    },
+    "distance": {
+      "type": "integer"
+    },
+    "is_forecasted": {
+      "type": "string"
+    }
+  }
+}

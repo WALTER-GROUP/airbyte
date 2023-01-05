@@ -2,8 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime, timedelta
-from typing import List
+from datetime import datetime
 
 import requests
 from abc import ABC, abstractmethod
@@ -41,7 +40,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
         :return: metric to be queried
         """
 
-    def pop_lane_from_list(self) -> dict:
+    def _pop_lane_from_list(self) -> dict:
         lane = self.lanes.pop()
         lane_query_params = {}
         for key in ['from_lvl1', 'to_lvl1', 'from_lvl2', 'to_lvl2']:
@@ -49,10 +48,9 @@ class TransporeonInsightsStream(HttpStream, ABC):
                 lane_query_params[key] = lane[key]
         return lane_query_params
 
-    # toDo check if this is the optimal way to handle lists
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if bool(self.lanes):
-            lane = self.pop_lane_from_list()
+            lane = self._pop_lane_from_list()
             return {'frequency': self.frequency,
                     'from_time': self.from_date,
                     'to_time': self.to_date,
@@ -74,7 +72,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        lane = self.pop_lane_from_list()
+        lane = self._pop_lane_from_list()
         return {'frequency': self.frequency,
                 'from_time': self.from_date,
                 'to_time': self.to_date,
@@ -129,24 +127,6 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
                 latest_record_date = datetime.strptime(record[self.cursor_field], self.date_format).date()
                 self._cursor_value = max(self._cursor_value, latest_record_date)
             yield record
-
-    #toDo rework
-    # def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
-    #     """
-    #     Returns a list of each day between the start date and now.
-    #     The return value is a list of dicts {'date': date_string}.
-    #     """
-    #     dates = []
-    #     while start_date < datetime.now():
-    #         dates.append({self.cursor_field: start_date.strftime(self.date_format)})
-    #         start_date += timedelta(days=30)
-    #     return dates
-    #
-    # def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) ->\
-    #         Iterable[Optional[Mapping[str, Any]]]:
-    #     start_date = datetime.strptime(stream_state[self.cursor_field],
-    #                                    self.date_format) if stream_state and self.cursor_field in stream_state else self.from_loading_start_date
-    #     return self._chunk_date_range(start_date)
 
 
 class CapacityIndex(IncrementalTransporeonInsightsStream):
@@ -224,3 +204,35 @@ class TotalPriceIndex(IncrementalTransporeonInsightsStream):
     @property
     def metric(self) -> str:
         return "total-price-index"
+
+
+class TransporeonForecast(IncrementalTransporeonInsightsStream, ABC):
+
+    def path(
+            self,
+            stream_state: Mapping[str, Any] = None,
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"metrics/{self.metric}/predictions"
+
+
+class SpotPriceForecast(TransporeonForecast):
+
+    @property
+    def metric(self) -> str:
+        return "spot-price"
+
+
+class CostIndexForecast(TransporeonForecast):
+
+    @property
+    def metric(self) -> str:
+        return "cost-index"
+
+
+class CostIndexFactorsForecast(TransporeonForecast):
+
+    @property
+    def metric(self) -> str:
+        return "cost-index-factors"
