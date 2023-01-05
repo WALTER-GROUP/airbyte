@@ -50,11 +50,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if bool(self.lanes):
-            lane = self._pop_lane_from_list()
-            return {'frequency': self.frequency,
-                    'from_time': self.from_date,
-                    'to_time': self.to_date,
-                    } | lane
+            return self._pop_lane_from_list()
         else:
             return None
 
@@ -72,7 +68,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        lane = self._pop_lane_from_list()
+        lane = next_page_token if next_page_token is not None else self._pop_lane_from_list()
         return {'frequency': self.frequency,
                 'from_time': self.from_date,
                 'to_time': self.to_date,
