@@ -18,7 +18,7 @@
       "type": "number"
     },
     "date": {
-      "type": "number"
+      "type": "string"
     },
     "distance": {
       "type": "integer"
