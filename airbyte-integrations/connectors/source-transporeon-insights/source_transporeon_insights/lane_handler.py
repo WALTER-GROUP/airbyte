@@ -1,6 +1,29 @@
 from typing import List, Mapping, Any
-
+from datetime import datetime
 import requests
+from dateutil.relativedelta import relativedelta
+
+
+def calculate_request_slices(from_date, date_list: list = None):
+    if date_list is None:
+        date_list = []
+    date_format = '%Y-%m-%d'
+    start_date = datetime.strptime(from_date, date_format).date()
+    today = datetime.today().date()
+    delta = start_date + relativedelta(months=+24)
+
+    end_date = delta if delta <= today else today
+    date_list.append((from_date, str(end_date)))
+
+    if end_date < datetime.today().date():
+        return calculate_request_slices(str(end_date + relativedelta(days=1)), date_list)
+    else:
+        return date_list
+
+
+def check_date(start_date):
+    if start_date + relativedelta(months=+24) >= datetime.today().date:
+        return start_date + relativedelta(months=24)
 
 
 def parse_input_list(lanes: str) -> List[dict]:

@@ -10,7 +10,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams import IncrementalMixin
-from .lane_handler import parse_input_list, get_lanes
+from .lane_handler import parse_input_list, get_lanes, calculate_request_slices
 
 
 class TransporeonInsightsStream(HttpStream, ABC):
@@ -20,7 +20,6 @@ class TransporeonInsightsStream(HttpStream, ABC):
         self.bearer_token = config['bearer_token']
         self.frequency = config['frequency']
         self.parsed_from_date = config['from_loading_start_date']
-        self.to_date = str(datetime.today().date())
         self.lanes_lvl2 = config['lanes_lvl2']
         self.lanes = parse_input_list(config['lanes']['lane']) if type(config['lanes']['lane']) is not bool and not config['lanes_lvl2'] \
             else get_lanes(config, self.metric)
@@ -30,8 +29,8 @@ class TransporeonInsightsStream(HttpStream, ABC):
         return "https://insights.transporeon.com/v1/"
 
     @property
-    def from_date(self) -> Mapping[str, Any]:
-        return self.parsed_from_date
+    def dates(self) -> Mapping[list, Any]:
+        return calculate_request_slices(self.parsed_from_date)
 
     @property
     @abstractmethod
@@ -39,6 +38,9 @@ class TransporeonInsightsStream(HttpStream, ABC):
         """
         :return: metric to be queried
         """
+
+    date_position = 0
+    lane = None
 
     def _pop_lane_from_list(self) -> dict:
         lane = self.lanes.pop()
@@ -48,9 +50,22 @@ class TransporeonInsightsStream(HttpStream, ABC):
                 lane_query_params[key] = lane[key]
         return lane_query_params
 
+    def _get_next_date(self):
+        date_pair = self.dates[self.date_position]
+        date_params = {'from_time': date_pair[0], 'to_time': date_pair[1]}
+
+        return date_params
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if bool(self.lanes):
-            return self._pop_lane_from_list()
+            if self.date_position == len(self.dates) - 1:
+                self.lane = self._pop_lane_from_list()
+                self.date_position = 0
+                date_params = self._get_next_date()
+            else:
+                date_params = self._get_next_date()
+                self.date_position += 1
+            return date_params | self.lane
         else:
             return None
 
@@ -68,11 +83,13 @@ class TransporeonInsightsStream(HttpStream, ABC):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        lane = next_page_token if next_page_token is not None else self._pop_lane_from_list()
+        if next_page_token is not None:
+            params = next_page_token
+        else:
+            params = self._pop_lane_from_list() | self._get_next_date()
+            self.date_position += 1
         return {'frequency': self.frequency,
-                'from_time': self.from_date,
-                'to_time': self.to_date,
-                } | lane
+                } | params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()
