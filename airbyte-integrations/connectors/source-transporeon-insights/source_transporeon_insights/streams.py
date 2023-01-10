@@ -3,6 +3,7 @@
 #
 
 from datetime import datetime
+from functools import cached_property
 
 import requests
 from abc import ABC, abstractmethod
@@ -21,16 +22,9 @@ class TransporeonInsightsStream(HttpStream, ABC):
         self.frequency = config['frequency']
         self.parsed_from_date = config['from_loading_start_date']
         self.lanes_lvl2 = config['lanes_lvl2']
+        # If there is a list of lanes parsed and there are no lanes_lvl2, then parse the input list. Otherwise, get the lanes.
         self.lanes = parse_input_list(config['lanes']['lane']) if type(config['lanes']['lane']) is not bool and not config['lanes_lvl2'] \
             else get_lanes(config, self.metric)
-
-    @property
-    def url_base(self) -> str:
-        return "https://insights.transporeon.com/v1/"
-
-    @property
-    def dates(self) -> Mapping[list, Any]:
-        return calculate_request_slices(self.parsed_from_date)
 
     @property
     @abstractmethod
@@ -38,6 +32,14 @@ class TransporeonInsightsStream(HttpStream, ABC):
         """
         :return: metric to be queried
         """
+
+    @property
+    def url_base(self) -> str:
+        return "https://insights.transporeon.com/v1/"
+
+    @cached_property
+    def dates(self) -> list:
+        return calculate_request_slices(self.parsed_from_date)
 
     date_position = 0
     lane = None
@@ -57,8 +59,17 @@ class TransporeonInsightsStream(HttpStream, ABC):
         return date_params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        If there are lanes, and the date position is greater than the length of the dates list,
+        then pop the lane from the list and set the date position to 0. Otherwise, get the next
+        date and increment the date position by 1
+
+        :param response: The response from the previous request
+        :type response: requests.Response
+        :return: A dictionary with the next date and lane.
+        """
         if bool(self.lanes):
-            if self.date_position == len(self.dates) - 1:
+            if self.date_position > len(self.dates) - 1:
                 self.lane = self._pop_lane_from_list()
                 self.date_position = 0
                 date_params = self._get_next_date()
@@ -86,7 +97,9 @@ class TransporeonInsightsStream(HttpStream, ABC):
         if next_page_token is not None:
             params = next_page_token
         else:
-            params = self._pop_lane_from_list() | self._get_next_date()
+            # initial lane + date combination for request
+            self.lane = self._pop_lane_from_list()
+            params = self.lane | self._get_next_date()
             self.date_position += 1
         return {'frequency': self.frequency,
                 } | params
@@ -115,23 +128,23 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
         return "date"
 
     @property
-    def from_date(self) -> Mapping[str, Any]:
+    def dates(self) -> list:
         if self.initial_state:
-            return self.initial_state
+            return calculate_request_slices(self.initial_state)
         else:
-            return self.parsed_from_date
+            return calculate_request_slices(self.parsed_from_date)
 
     @property
     def state(self) -> Mapping[str, Any]:
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value.strftime(self.date_format)}
         else:
-            return {self.cursor_field: datetime.strptime(self.to_date, self.date_format).date()}
+            return {self.cursor_field: str(datetime.today().date())}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
         initial_state = datetime.strptime(value[self.cursor_field], self.date_format).date()
-        self.initial_state = initial_state
+        self.initial_state = str(initial_state)
         self._cursor_value = initial_state
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -228,6 +241,26 @@ class TransporeonForecast(IncrementalTransporeonInsightsStream, ABC):
             next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"metrics/{self.metric}/predictions"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if bool(self.lanes):
+            return self._pop_lane_from_list()
+        else:
+            return None
+
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        if next_page_token is not None:
+            params = next_page_token
+        else:
+            self.lane = self._pop_lane_from_list()
+            params = self.lane
+        return {'frequency': self.frequency,
+                } | params
 
 
 class SpotPriceForecast(TransporeonForecast):

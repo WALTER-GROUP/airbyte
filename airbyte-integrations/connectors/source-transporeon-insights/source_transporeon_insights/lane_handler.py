@@ -5,6 +5,14 @@ from dateutil.relativedelta import relativedelta
 
 
 def calculate_request_slices(from_date, date_list: list = None):
+    """
+    Recursive function that generates a list of 24-month intervals between the from_date and now
+
+    :param from_date: The date from which you want to start fetching data
+    :param date_list: list = None
+    :type date_list: list
+    :return: A list of tuples, each tuple containing a start date and an end date.
+    """
     if date_list is None:
         date_list = []
     date_format = '%Y-%m-%d'
@@ -22,6 +30,12 @@ def calculate_request_slices(from_date, date_list: list = None):
 
 
 def check_date(start_date):
+    """
+    If the start date is within 24 months of today's date, return the start date plus 24 months
+
+    :param start_date: The date you want to start the forecast from
+    :return: The date 24 months from the start date.
+    """
     if start_date + relativedelta(months=+24) >= datetime.today().date:
         return start_date + relativedelta(months=24)
 
@@ -72,8 +86,8 @@ def get_lanes(config: Mapping[str, Any], metric: str) -> List[dict]:
     try:
         request = requests.get(url, headers=headers)
         available_lanes = request.json()['lanes']
-    except requests.exceptions.RequestException:
-        raise
+    except requests.exceptions.RequestException as ex:
+        raise RuntimeError("Could not collect available lanes from API metrics, so sync can not be executed") from ex
 
     available_lanes = filter_lanes(available_lanes, config['lanes_lvl2'])
     if type(config["lanes"]["lane"]) is bool:
