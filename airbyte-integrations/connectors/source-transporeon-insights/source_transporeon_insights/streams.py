@@ -25,6 +25,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
         # If there is a list of lanes parsed and there are no lanes_lvl2, then parse the input list. Otherwise, get the lanes.
         self.lanes = parse_input_list(config['lanes']['lane']) if type(config['lanes']['lane']) is not bool and not config['lanes_lvl2'] \
             else get_lanes(config, self.metric)
+        # load first lane from list
         self.lane = pop_lane_from_list(self.lanes)
 
     date_format = '%Y-%m-%d'
@@ -39,10 +40,6 @@ class TransporeonInsightsStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return "https://insights.transporeon.com/v1/"
-
-    @cached_property
-    def dates(self) -> list:
-        return calculate_request_slices(self.parsed_from_date)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if bool(self.lanes):
@@ -78,7 +75,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
 
     def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) \
             -> Iterable[Optional[Mapping[str, Any]]]:
-        from_date = datetime.strptime(stream_state[self.cursor_field], self.date_format) if stream_state and \
+        from_date = stream_state[self.cursor_field] if stream_state and \
                         self.cursor_field in stream_state else self.parsed_from_date
         return calculate_request_slices(from_date)
 
@@ -88,7 +85,6 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
     def __init__(self, config: Mapping[str, Any], authenticator, **kwargs):
         super().__init__(config, authenticator, **kwargs)
         self._cursor_value = None
-        self.initial_state = None
 
     state_checkpoint_interval = None
     primary_key = None
@@ -96,13 +92,6 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
     @property
     def cursor_field(self) -> str:
         return "date"
-
-    @property
-    def dates(self) -> list:
-        if self.initial_state:
-            return calculate_request_slices(self.initial_state)
-        else:
-            return calculate_request_slices(self.parsed_from_date)
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -113,9 +102,7 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        initial_state = datetime.strptime(value[self.cursor_field], self.date_format).date()
-        self.initial_state = str(initial_state)
-        self._cursor_value = initial_state
+        self._cursor_value = datetime.strptime(value[self.cursor_field], self.date_format).date()
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
