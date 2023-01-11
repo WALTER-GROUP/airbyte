@@ -21,7 +21,7 @@ def calculate_request_slices(from_date, date_list: list = None):
     delta = start_date + relativedelta(months=+24)
 
     end_date = delta if delta <= today else today
-    date_list.append((from_date, str(end_date)))
+    date_list.append({'from_time': from_date, 'to_time': str(end_date)})
 
     if end_date < datetime.today().date():
         return calculate_request_slices(str(end_date + relativedelta(days=1)), date_list)
@@ -95,3 +95,12 @@ def get_lanes(config: Mapping[str, Any], metric: str) -> List[dict]:
     else:
         parsed_lanes = parse_input_list(config["lanes"])
         return match_lanes(available_lanes, parsed_lanes)
+
+
+def pop_lane_from_list(lanes: list) -> dict:
+    lane = lanes.pop()
+    lane_query_params = {}
+    for key in ['from_lvl1', 'to_lvl1', 'from_lvl2', 'to_lvl2']:
+        if key in lane:
+            lane_query_params[key] = lane[key]
+    return lane_query_params
