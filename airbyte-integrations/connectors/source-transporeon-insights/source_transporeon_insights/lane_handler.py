@@ -90,7 +90,7 @@ def get_lanes(config: Mapping[str, Any], metric: str) -> List[dict]:
         raise RuntimeError("Could not collect available lanes from API metrics, so sync can not be executed") from ex
 
     available_lanes = filter_lanes(available_lanes, config['lanes_lvl2'])
-    if type(config["lanes"]["lane"]) is bool:
+    if config["lanes"]["lane"] == "ALL":
         return available_lanes
     else:
         parsed_lanes = parse_input_list(config["lanes"])
