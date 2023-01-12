@@ -218,6 +218,11 @@ class TransporeonForecast(IncrementalTransporeonInsightsStream, ABC):
     ) -> str:
         return f"metrics/{self.metric}/predictions"
 
+    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) \
+            -> Iterable[Optional[Mapping[str, Any]]]:
+        # return empty dict since forecast does not neet from_time and to_time parameter
+        return [{}]
+
 
 class SpotPriceForecast(TransporeonForecast):
 
