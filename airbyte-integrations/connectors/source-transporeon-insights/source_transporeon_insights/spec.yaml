@@ -46,7 +46,7 @@ connectionSpecification:
             - lane
           properties:
             lane:
-              type: boolean
+              type: string
               description: Get data for all lanes.
               const: true
         - title: SPECIFIC
@@ -55,8 +55,8 @@ connectionSpecification:
             - lane
           properties:
             lane:
-              type: boolean
-              description: Get data for all lanes.
+              type: string
+              description: Get data for specific lanes.
               const: false
             lane_list:
               title: List of lanes
