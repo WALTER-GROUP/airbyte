@@ -84,7 +84,7 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
 
     def __init__(self, config: Mapping[str, Any], authenticator, **kwargs):
         super().__init__(config, authenticator, **kwargs)
-        self._cursor_value = None
+        self._cursor_value = datetime.strptime(self.parsed_from_date, self.date_format).date()
 
     state_checkpoint_interval = None
     primary_key = None
@@ -95,10 +95,7 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
 
     @property
     def state(self) -> Mapping[str, Any]:
-        if self._cursor_value:
-            return {self.cursor_field: self._cursor_value.strftime(self.date_format)}
-        else:
-            return {self.cursor_field: self.parsed_from_date}
+        return {self.cursor_field: self._cursor_value.strftime(self.date_format)}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -106,9 +103,8 @@ class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, Incrementa
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            if self._cursor_value:
-                latest_record_date = datetime.strptime(record[self.cursor_field], self.date_format).date()
-                self._cursor_value = max(self._cursor_value, latest_record_date)
+            latest_record_date = datetime.strptime(record[self.cursor_field], self.date_format).date()
+            self._cursor_value = max(self._cursor_value, latest_record_date)
             yield record
 
 
