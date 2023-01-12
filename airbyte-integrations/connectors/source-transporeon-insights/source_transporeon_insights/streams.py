@@ -11,7 +11,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional, List
 
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams import IncrementalMixin
-from .lane_handler import parse_input_list, get_lanes, calculate_request_slices, pop_lane_from_list
+from .lane_handler import parse_input_list, get_lanes, calculate_request_slices, get_lane_from_list
 
 
 class TransporeonInsightsStream(HttpStream, ABC):
@@ -25,8 +25,7 @@ class TransporeonInsightsStream(HttpStream, ABC):
         # If there is a list of lanes parsed and there are no lanes_lvl2, then parse the input list. Otherwise, get the lanes.
         self.lanes = parse_input_list(config['lanes']['lane']) if type(config['lanes']['lane']) is not bool and not config['lanes_lvl2'] \
             else get_lanes(config, self.metric)
-        # load first lane from list
-        self.lane = pop_lane_from_list(self.lanes)
+        self.lane = None
 
     date_format = '%Y-%m-%d'
 
@@ -41,10 +40,28 @@ class TransporeonInsightsStream(HttpStream, ABC):
     def url_base(self) -> str:
         return "https://insights.transporeon.com/v1/"
 
+    @cached_property
+    def dates(self) -> list:
+        return calculate_request_slices(self.parsed_from_date)
+
+    list_position = 0
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if bool(self.lanes):
-            return pop_lane_from_list(self.lanes)
+        """
+        If the list position is less than the length of the list, get the lane from the list
+        and increment the list position by 1. Otherwise, reset the list position to 0 and return None
+
+        :param response: The response from the previous request
+        :type response: requests.Response
+        :return: A lane
+        """
+        if self.list_position < len(self.lanes):
+            lane = get_lane_from_list(self.lanes, self.list_position)
+            self.list_position += 1
+            return lane
         else:
+            self.list_position = 0
+            self.lane = None
             return None
 
     def path(
@@ -61,7 +78,12 @@ class TransporeonInsightsStream(HttpStream, ABC):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+        if self.lane is None:
+            # get first lane from list and move list position to one
+            self.lane = get_lane_from_list(self.lanes, self.list_position)
+            self.list_position += 1
         if next_page_token is not None:
+            # get every other lane
             self.lane = next_page_token
         return {'frequency': self.frequency,
                 } | self.lane | stream_slice
@@ -77,7 +99,8 @@ class TransporeonInsightsStream(HttpStream, ABC):
             -> Iterable[Optional[Mapping[str, Any]]]:
         from_date = stream_state[self.cursor_field] if stream_state and \
                         self.cursor_field in stream_state else self.parsed_from_date
-        return calculate_request_slices(from_date)
+        slices = calculate_request_slices(from_date)
+        return slices
 
 
 class IncrementalTransporeonInsightsStream(TransporeonInsightsStream, IncrementalMixin, ABC):

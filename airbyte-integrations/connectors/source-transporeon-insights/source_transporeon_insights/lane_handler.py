@@ -97,8 +97,8 @@ def get_lanes(config: Mapping[str, Any], metric: str) -> List[dict]:
         return match_lanes(available_lanes, parsed_lanes)
 
 
-def pop_lane_from_list(lanes: list) -> dict:
-    lane = lanes.pop()
+def get_lane_from_list(lanes: list, position: int) -> dict:
+    lane = lanes[position]
     lane_query_params = {}
     for key in ['from_lvl1', 'to_lvl1', 'from_lvl2', 'to_lvl2']:
         if key in lane:
