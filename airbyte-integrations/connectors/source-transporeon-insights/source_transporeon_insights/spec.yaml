@@ -48,7 +48,7 @@ connectionSpecification:
             lane:
               type: string
               description: Get data for all lanes.
-              const: true
+              const: "ALL"
         - title: SPECIFIC
           type: object
           required:
@@ -57,7 +57,7 @@ connectionSpecification:
             lane:
               type: string
               description: Get data for specific lanes.
-              const: false
+              const: "SPECIFIC"
             lane_list:
               title: List of lanes
               description: |
