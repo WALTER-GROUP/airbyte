@@ -55,6 +55,10 @@ connectionSpecification:
             - lane
           properties:
             lane:
+              type: boolean
+              description: Get data for all lanes.
+              const: false
+            lane_list:
               title: List of lanes
               description: |
                 List of specific lanes to be loaded. 

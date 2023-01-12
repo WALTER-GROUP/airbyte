@@ -22,8 +22,8 @@ class TransporeonInsightsStream(HttpStream, ABC):
         self.frequency = config['frequency']
         self.parsed_from_date = config['from_loading_start_date']
         self.lanes_lvl2 = config['lanes_lvl2']
-        # If there is a list of lanes parsed and there are no lanes_lvl2, then parse the input list. Otherwise, get the lanes.
-        self.lanes = parse_input_list(config['lanes']['lane']) if type(config['lanes']['lane']) is not bool and not config['lanes_lvl2'] \
+
+        self.lanes = parse_input_list(config['lanes']['lane_list']) if config['lanes']['lane'] is False and not config['lanes_lvl2'] \
             else get_lanes(config, self.metric)
         self.lane = None
 
