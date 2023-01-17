@@ -2,28 +2,27 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "from_lvl1": {
+    "cost-index": {
+      "type": "object",
+      "properties": {
+        "upper_confidence_bound": {
+          "type": ["null", "number"]
+        },
+        "lower_confidence_bound": {
+          "type": ["null", "number"]
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "date": {
       "type": "string"
     },
     "to_lvl1": {
       "type": "string"
     },
-    "from_lvl2": {
-      "type": "string"
-    },
-    "to_lvl2": {
-      "type": "string"
-    },
-    "cost-index": {
-      "type": "number"
-    },
-    "date": {
-      "type": "string"
-    },
-    "distance": {
-      "type": "integer"
-    },
-    "is_forecasted": {
+    "from_lvl1": {
       "type": "string"
     }
   }
