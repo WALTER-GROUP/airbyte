@@ -2,28 +2,7 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "from_lvl1": {
-      "type": "string"
-    },
-    "to_lvl1": {
-      "type": "string"
-    },
-    "from_lvl2": {
-      "type": "string"
-    },
-    "to_lvl2": {
-      "type": "string"
-    },
-    "contract-price-index": {
-      "type": "string"
-    },
     "date": {
-      "type": "string"
-    },
-    "distance": {
-      "type": "number"
-    },
-    "is_forecasted": {
       "type": "string"
     },
     "metadata": {
@@ -41,11 +20,7 @@
                 "value": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "name",
-                "value"
-              ]
+              }
             },
             {
               "type": "object",
@@ -56,11 +31,7 @@
                 "value": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "name",
-                "value"
-              ]
+              }
             },
             {
               "type": "object",
@@ -71,11 +42,7 @@
                 "value": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "name",
-                "value"
-              ]
+              }
             },
             {
               "type": "object",
@@ -86,11 +53,7 @@
                 "value": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "name",
-                "value"
-              ]
+              }
             },
             {
               "type": "object",
@@ -101,11 +64,7 @@
                 "value": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "name",
-                "value"
-              ]
+              }
             },
             {
               "type": "object",
@@ -116,11 +75,7 @@
                 "value": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "name",
-                "value"
-              ]
+              }
             },
             {
               "type": "object",
@@ -131,15 +86,195 @@
                 "value": {
                   "type": "string"
                 }
-              },
-              "required": [
-                "name",
-                "value"
-              ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
             }
           ]
         }
       ]
+    },
+    "to_lvl1": {
+      "type": "string"
+    },
+    "cost-index-factors": {
+      "type": "object",
+      "properties": {
+        "upper_confidence_bound": {
+          "type": ["null", "number"]
+        },
+        "lower_confidence_bound": {
+          "type": ["null", "number"]
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "from_lvl1": {
+      "type": "string"
     }
   }
 }

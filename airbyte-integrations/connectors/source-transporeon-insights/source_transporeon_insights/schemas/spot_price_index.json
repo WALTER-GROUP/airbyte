@@ -14,7 +14,7 @@
     "to_lvl2": {
       "type": "string"
     },
-    "spot-price": {
+    "spot-price-index": {
       "type": "number"
     },
     "date": {
