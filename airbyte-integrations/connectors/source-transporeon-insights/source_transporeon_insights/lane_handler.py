@@ -17,10 +17,10 @@ def calculate_request_slices(from_date, date_list: list = None):
         date_list = []
     date_format = '%Y-%m-%d'
     start_date = datetime.strptime(from_date, date_format).date()
-    today = datetime.today().date()
+    in_seven_days = datetime.today().date() + relativedelta(days=7)
     delta = start_date + relativedelta(months=+24)
 
-    end_date = delta if delta <= today else today
+    end_date = delta if delta <= in_seven_days else in_seven_days
     date_list.append({'from_time': from_date, 'to_time': str(end_date)})
 
     if end_date < datetime.today().date():
