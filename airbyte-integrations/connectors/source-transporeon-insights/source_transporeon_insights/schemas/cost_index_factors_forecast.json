@@ -2,279 +2,107 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "date": {
+    "from_lvl1": {
+      "type": "string"
+    },
+    "to_lvl1": {
       "type": "string"
     },
     "metadata": {
       "type": "array",
       "items": [
         {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
             },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
+            "value": {
+              "type": "string"
             }
-          ]
+          }
         },
         {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
             },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
+            "value": {
+              "type": "string"
             }
-          ]
+          }
         },
         {
-          "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
             },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
+            "value": {
+              "type": "string"
             }
-          ]
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
         }
       ]
-    },
-    "to_lvl1": {
-      "type": "string"
     },
     "cost-index-factors": {
       "type": "object",
       "properties": {
-        "upper_confidence_bound": {
-          "type": ["null", "number"]
-        },
         "lower_confidence_bound": {
-          "type": ["null", "number"]
+          "type": ["number", "null"]
         },
         "value": {
           "type": "number"
+        },
+        "upper_confidence_bound": {
+          "type": ["number", "null"]
         }
       }
-    },
-    "from_lvl1": {
-      "type": "string"
     }
   }
 }

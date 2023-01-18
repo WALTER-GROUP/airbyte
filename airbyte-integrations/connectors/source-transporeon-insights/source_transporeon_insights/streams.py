@@ -90,10 +90,14 @@ class TransporeonInsightsStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()
-        values = {k: v for k, v in data.items() if k != "timeseries"}
+        values = {k: v for k, v in data.items() if k != ("timeseries" or "metadata")}
         ts_data = data.get("timeseries", [])
-        for e in ts_data:
-            yield values | {self.metric: e[1]} | {"date": e[0]}
+        metadata = data.get("metadata", [])
+
+        for i, entry in enumerate(ts_data):
+            metadata_entry = {"metadata": metadata[i]} if metadata else {}
+            ts_entry = {self.metric: entry[1]} | {"date": entry[0]}
+            yield values | ts_entry | metadata_entry
 
     def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) \
             -> Iterable[Optional[Mapping[str, Any]]]:
