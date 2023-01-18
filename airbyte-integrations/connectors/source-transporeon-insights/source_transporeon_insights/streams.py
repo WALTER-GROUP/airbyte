@@ -205,6 +205,13 @@ class SpotPriceIndex(IncrementalTransporeonInsightsStream):
         return "spot-price-index"
 
 
+class SpotOfferSpread(IncrementalTransporeonInsightsStream):
+
+    @property
+    def metric(self) -> str:
+        return "spot-offer-spread"
+
+
 class TotalPriceIndex(IncrementalTransporeonInsightsStream):
 
     @property
@@ -224,7 +231,7 @@ class TransporeonForecast(IncrementalTransporeonInsightsStream, ABC):
 
     def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) \
             -> Iterable[Optional[Mapping[str, Any]]]:
-        # return empty dict since forecast does not neet from_time and to_time parameter
+        # return empty dict since forecast does not need from_time and to_time parameter
         return [{}]
 
 

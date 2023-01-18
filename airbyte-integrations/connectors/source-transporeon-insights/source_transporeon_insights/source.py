@@ -10,7 +10,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import CostIndex, CostIndexForecast, CostIndexFactors, CostIndexFactorsForecast, CapacityIndex, ContractPrice, \
-    ContractPriceIndex, ContractRejectionRate, DieselPrice, SpotPrice, SpotPriceForecast, SpotPriceIndex, SpotOfferIndex, TotalPriceIndex
+    ContractPriceIndex, ContractRejectionRate, DieselPrice, SpotPrice, SpotPriceForecast, SpotPriceIndex, SpotOfferIndex, SpotOfferSpread, \
+    TotalPriceIndex
 
 
 # Source
@@ -40,6 +41,7 @@ class SourceTransporeonInsights(AbstractSource):
                 SpotPrice(authenticator=auth, config=config),
                 SpotPriceIndex(authenticator=auth, config=config),
                 TotalPriceIndex(authenticator=auth, config=config),
+                SpotOfferSpread(authenticator=auth, config=config),
                 SpotPriceForecast(authenticator=auth, config=config),
                 CostIndexForecast(authenticator=auth, config=config),
                 CostIndexFactorsForecast(authenticator=auth, config=config),
