@@ -24,7 +24,7 @@ def calculate_request_slices(from_date, date_list: list = None):
     date_list.append({'from_time': from_date, 'to_time': str(end_date)})
 
     if end_date < datetime.today().date():
-        return calculate_request_slices(str(end_date + relativedelta(days=1)), date_list)
+        return calculate_request_slices(str(end_date), date_list)
     else:
         return date_list
 
