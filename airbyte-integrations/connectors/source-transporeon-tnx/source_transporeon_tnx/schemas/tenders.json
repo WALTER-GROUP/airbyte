@@ -1,0 +1,824 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "allow_price_revisions": {
+      "type": "boolean"
+    },
+    "cargo_orders": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "match_price": {
+              "type": "null"
+            },
+            "name": {
+              "type": "string"
+            },
+            "owning_org": {
+              "type": "object",
+              "properties": {
+                "contact_details": {
+                  "type": "string"
+                },
+                "logo_url": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "supports_clearing": {
+                  "type": "boolean"
+                },
+                "uid": {
+                  "type": "string"
+                }
+              }
+            },
+            "service_fees": {
+              "type": "object",
+              "properties": {
+                "cancellation": {
+                  "type": "object",
+                  "properties": {
+                    "fixed_fee": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            },
+            "status": {
+              "type": "string"
+            },
+            "uid": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "cargos": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "cargo_order_uid": {
+              "type": "string"
+            },
+            "custom_fields": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "measures": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "number"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "number"
+                    }
+                  }
+                }
+              ]
+            },
+            "services_required": {
+              "type": "object",
+              "properties": {
+                "categorical": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "values": {
+                          "type": "array",
+                          "items": [
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "type": {
+              "type": "string"
+            },
+            "uid": {
+              "type": "string"
+            },
+            "was_aborted": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "carrier_can_cancel_post_match": {
+      "type": "boolean"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "current_reply": {
+      "type": "null"
+    },
+    "execution_notes": {
+      "type": "null"
+    },
+    "has_payment_items": {
+      "type": "boolean"
+    },
+    "highest_future_price": {
+      "type": "null"
+    },
+    "highlights": {
+      "type": "object"
+    },
+    "is_important": {
+      "type": "boolean"
+    },
+    "legal_contract_link": {
+      "type": "string"
+    },
+    "match_price": {
+      "type": "number"
+    },
+    "max_measures": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "next_offer_price": {
+      "type": "null"
+    },
+    "next_offer_time": {
+      "type": "null"
+    },
+    "owning_org_managed_org_id": {
+      "type": "string"
+    },
+    "owning_org_name": {
+      "type": "string"
+    },
+    "owning_org_uid": {
+      "type": "string"
+    },
+    "payment_term_description": {
+      "type": "string"
+    },
+    "rep_hints": {
+      "type": "null"
+    },
+    "reserve_price": {
+      "type": "null"
+    },
+    "robots": {
+      "type": "array",
+      "items": {}
+    },
+    "sorts": {
+      "type": "object"
+    },
+    "spend_up": {
+      "type": "null"
+    },
+    "status": {
+      "type": "string"
+    },
+    "tender_type": {
+      "type": "string"
+    },
+    "time_created": {
+      "type": "string"
+    },
+    "time_expires": {
+      "type": "string"
+    },
+    "time_matched": {
+      "type": "null"
+    },
+    "time_updated": {
+      "type": "string"
+    },
+    "trip": {
+      "type": "object",
+      "properties": {
+        "activities": {
+          "type": "array",
+          "items": [
+            {
+              "type": "object",
+              "properties": {
+                "actions": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "cargo_bundle_activity_index": {
+                          "type": "integer"
+                        },
+                        "cargo_order_activity_index": {
+                          "type": "integer"
+                        },
+                        "cargo_order_uid": {
+                          "type": "string"
+                        },
+                        "cargos": {
+                          "type": "array",
+                          "items": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "uid": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "dock_doors": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "services_required": {
+                          "type": "object",
+                          "properties": {
+                            "categorical": {
+                              "type": "array",
+                              "items": {}
+                            }
+                          }
+                        },
+                        "timing": {
+                          "type": "object",
+                          "properties": {
+                            "duration": {
+                              "type": "number"
+                            },
+                            "earliest_start": {
+                              "type": "string"
+                            },
+                            "latest_end": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "aggregation_group": {
+                  "type": "string"
+                },
+                "end_state": {
+                  "type": "object",
+                  "properties": {
+                    "loaded_cargo": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "cargo_order_uid": {
+                              "type": "string"
+                            },
+                            "cargos": {
+                              "type": "array",
+                              "items": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "uid": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "location": {
+                      "type": "object",
+                      "properties": {
+                        "address": {
+                          "type": "string"
+                        },
+                        "address_approximated": {
+                          "type": "null"
+                        },
+                        "country_code": {
+                          "type": "string"
+                        },
+                        "latitude": {
+                          "type": "number"
+                        },
+                        "longitude": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "original_address": {
+                          "type": "null"
+                        },
+                        "postal_code": {
+                          "type": "string"
+                        },
+                        "postal_code_bare": {
+                          "type": "string"
+                        },
+                        "short_address": {
+                          "type": "string"
+                        },
+                        "timezone": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "site": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "services_required": {
+                          "type": "object",
+                          "properties": {
+                            "categorical": {
+                              "type": "array",
+                              "items": {}
+                            },
+                            "numerical": {
+                              "type": "array",
+                              "items": {}
+                            }
+                          }
+                        },
+                        "uid": {
+                          "type": "null"
+                        },
+                        "wait_time": {
+                          "type": "null"
+                        },
+                        "working_calendar": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                },
+                "timing": {
+                  "type": "object",
+                  "properties": {
+                    "earliest_start": {
+                      "type": "string"
+                    },
+                    "latest_end": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "actions": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "cargo_bundle_activity_index": {
+                          "type": "integer"
+                        },
+                        "cargo_order_activity_index": {
+                          "type": "integer"
+                        },
+                        "cargo_order_uid": {
+                          "type": "string"
+                        },
+                        "cargos": {
+                          "type": "array",
+                          "items": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "uid": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "dock_doors": {
+                          "type": "array",
+                          "items": {}
+                        },
+                        "services_required": {
+                          "type": "object",
+                          "properties": {
+                            "categorical": {
+                              "type": "array",
+                              "items": {}
+                            }
+                          }
+                        },
+                        "timing": {
+                          "type": "object",
+                          "properties": {
+                            "duration": {
+                              "type": "number"
+                            },
+                            "earliest_start": {
+                              "type": "string"
+                            },
+                            "latest_end": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "aggregation_group": {
+                  "type": "string"
+                },
+                "end_state": {
+                  "type": "object",
+                  "properties": {
+                    "loaded_cargo": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "location": {
+                      "type": "object",
+                      "properties": {
+                        "address": {
+                          "type": "string"
+                        },
+                        "address_approximated": {
+                          "type": "null"
+                        },
+                        "country_code": {
+                          "type": "string"
+                        },
+                        "latitude": {
+                          "type": "number"
+                        },
+                        "longitude": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "original_address": {
+                          "type": "null"
+                        },
+                        "postal_code": {
+                          "type": "null"
+                        },
+                        "postal_code_bare": {
+                          "type": "string"
+                        },
+                        "short_address": {
+                          "type": "string"
+                        },
+                        "timezone": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "site": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "services_required": {
+                          "type": "object",
+                          "properties": {
+                            "categorical": {
+                              "type": "array",
+                              "items": {}
+                            },
+                            "numerical": {
+                              "type": "array",
+                              "items": {}
+                            }
+                          }
+                        },
+                        "uid": {
+                          "type": "null"
+                        },
+                        "wait_time": {
+                          "type": "null"
+                        },
+                        "working_calendar": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                },
+                "timing": {
+                  "type": "object",
+                  "properties": {
+                    "earliest_start": {
+                      "type": "string"
+                    },
+                    "latest_end": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "bundle": {
+          "type": "object",
+          "properties": {
+            "accept_by_user": {
+              "type": "null"
+            },
+            "baseline_rate": {
+              "type": "null"
+            },
+            "best_bid_amount": {
+              "type": "null"
+            },
+            "bid_to_reserve_amount": {
+              "type": "null"
+            },
+            "criticality": {
+              "type": "null"
+            },
+            "display_name": {
+              "type": "null"
+            },
+            "match_price_per_meter": {
+              "type": "number"
+            },
+            "predicted_price": {
+              "type": "null"
+            },
+            "predicted_response_time": {
+              "type": "null"
+            },
+            "pricing_hints": {
+              "type": "null"
+            },
+            "reserve_price": {
+              "type": "null"
+            },
+            "time_expires": {
+              "type": "null"
+            },
+            "uid": {
+              "type": "string"
+            }
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "driving": {
+              "type": "object",
+              "properties": {
+                "dead_running": {
+                  "type": "object",
+                  "properties": {
+                    "distance": {
+                      "type": "integer"
+                    },
+                    "time": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "is_possible": {
+                  "type": "boolean"
+                },
+                "loading_time": {
+                  "type": "number"
+                },
+                "route_features": {
+                  "type": "array",
+                  "items": {}
+                },
+                "total": {
+                  "type": "object",
+                  "properties": {
+                    "distance": {
+                      "type": "integer"
+                    },
+                    "time": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "travel": {
+                  "type": "object",
+                  "properties": {
+                    "distance": {
+                      "type": "integer"
+                    },
+                    "time": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "under_load": {
+                  "type": "object",
+                  "properties": {
+                    "distance": {
+                      "type": "integer"
+                    },
+                    "time": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "robot": {
+          "type": "null"
+        },
+        "services_required": {
+          "type": "object",
+          "properties": {
+            "categorical": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "values": {
+                      "type": "array",
+                      "items": [
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "uid": {
+      "type": "string"
+    },
+    "was_aborted": {
+      "type": "boolean"
+    }
+  }
+}
