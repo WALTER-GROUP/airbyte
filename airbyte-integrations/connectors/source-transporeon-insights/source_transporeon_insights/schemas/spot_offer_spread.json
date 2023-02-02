@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "from_lvl1": {
+      "type": "string"
+    },
+    "to_lvl1": {
+      "type": "string"
+    },
+    "from_lvl2": {
+      "type": "string"
+    },
+    "to_lvl2": {
+      "type": "string"
+    },
+    "spot-offer-spread": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
+    },
+    "is_forecasted": {
+      "type": "string"
+    }
+  }
+}

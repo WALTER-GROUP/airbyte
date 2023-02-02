@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "cost-index": {
+      "type": "object",
+      "properties": {
+        "upper_confidence_bound": {
+          "type": ["null", "number"]
+        },
+        "lower_confidence_bound": {
+          "type": ["null", "number"]
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "date": {
+      "type": "string"
+    },
+    "to_lvl1": {
+      "type": "string"
+    },
+    "from_lvl1": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string"
+    },
+    "spot-price": {
+      "type": "object",
+      "properties": {
+        "upper_confidence_bound": {
+          "type": ["null", "number"]
+        },
+        "lower_confidence_bound": {
+          "type": ["null", "number"]
+        },
+        "value": {
+          "type": "number"
+        }
+      }
+    },
+    "to_lvl1": {
+      "type": "string"
+    },
+    "from_lvl2": {
+      "type": "string"
+    },
+    "to_lvl2": {
+      "type": "string"
+    },
+    "from_lvl1": {
+      "type": "string"
+    }
+  }
+}
