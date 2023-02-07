@@ -4,12 +4,15 @@
 import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams import IncrementalMixin
 
 
 def get_bearer_token(config: Mapping[str, Any]):
@@ -45,13 +48,13 @@ class TransporeonTnxStream(HttpStream, ABC):
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        if not next_page_token:
-            next_page_token = {}
+        next_page_token = next_page_token or {}
         return {"size": "100",
-                "sort_type": "time_created.desc"} | next_page_token
+                "sort_type": "time_created.desc",
+                **next_page_token}
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return {"accept": "application/json",
                 "x-tnx-auth0-tenant": "offers-transporeon.eu.auth0.com",
@@ -65,7 +68,45 @@ class TransporeonTnxStream(HttpStream, ABC):
             yield item
 
 
-class Tenders(TransporeonTnxStream):
+class IncrementalTransporeonInsightsStream(TransporeonTnxStream, IncrementalMixin, ABC):
+
+    def __init__(self, config: Mapping[str, Any], authenticator, **kwargs):
+        super().__init__(config, authenticator, **kwargs)
+        self._cursor_value = None
+        self.offset = int(config.get("time_offset")) if config.get("time_offset") else 24
+
+    state_checkpoint_interval = None
+    primary_key = None
+    date_format = "%Y-%m-%dT%H:%M:%SZ"
+
+    @property
+    def cursor_field(self) -> str:
+        return "start_time_min"
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return {self.cursor_field: datetime.utcnow().strftime(self.date_format)}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = datetime.strptime(value[self.cursor_field], self.date_format)
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        next_page_token = next_page_token or {}
+        start_time_min = {self.cursor_field: (self._cursor_value - relativedelta(hours=self.offset)).strftime(self.date_format)}\
+            if self._cursor_value else {}
+
+        return {
+            "size": "100",
+            "sort_type": "time_created.desc",
+            **next_page_token,
+            **start_time_min
+        }
+
+
+class Tenders(IncrementalTransporeonInsightsStream):
 
     primary_key = None
 

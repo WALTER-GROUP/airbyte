@@ -31,3 +31,8 @@ connectionSpecification:
       description: Secret from Transporeon support for Auth API.
       airbyte_secret: true
       order: 3
+    time_offset:
+      title: start_time_min offset in hours
+      type: integer
+      description: Offset for earliest start time of a tender trip
+      order: 4
