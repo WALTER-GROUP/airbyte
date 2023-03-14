@@ -12,7 +12,7 @@
           "type": "object",
           "properties": {
             "match_price": {
-              "type": "null"
+              "type": ["null", "number"]
             },
             "name": {
               "type": "string"
@@ -98,7 +98,7 @@
                       "type": "string"
                     },
                     "value": {
-                      "type": "integer"
+                      "type": "number"
                     }
                   }
                 },
@@ -183,16 +183,56 @@
       "type": "string"
     },
     "current_reply": {
-      "type": "null"
+      "type": "object",
+      "properties": {
+        "bid_ts": {
+          "type": "string"
+        },
+        "reply_by_user": {
+          "type": "object",
+          "properties": {
+            "uid": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "uid",
+            "name",
+            "email"
+          ]
+        },
+        "bid_amount": {
+          "type": "number"
+        },
+        "robot_id": {
+          "type": ["string", "null"]
+        },
+        "action": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bid_ts",
+        "reply_by_user",
+        "bid_amount",
+        "robot_id",
+        "action"
+      ]
     },
     "execution_notes": {
-      "type": "null"
+      "type": ["array", "null"]
     },
     "has_payment_items": {
       "type": "boolean"
     },
     "highest_future_price": {
-      "type": "null"
+      "type": ["number","null"]
     },
     "highlights": {
       "type": "object"
@@ -216,7 +256,7 @@
               "type": "string"
             },
             "value": {
-              "type": "integer"
+              "type": "number"
             }
           }
         },
@@ -256,10 +296,10 @@
       ]
     },
     "next_offer_price": {
-      "type": "null"
+      "type": ["string", "null"]
     },
     "next_offer_time": {
-      "type": "null"
+      "type": ["string", "null"]
     },
     "owning_org_managed_org_id": {
       "type": "string"
@@ -274,10 +314,10 @@
       "type": "string"
     },
     "rep_hints": {
-      "type": "null"
+      "type": ["string", "null"]
     },
     "reserve_price": {
-      "type": "null"
+      "type": ["number", "null"]
     },
     "robots": {
       "type": "array",
@@ -287,7 +327,7 @@
       "type": "object"
     },
     "spend_up": {
-      "type": "null"
+      "type": ["string", "null"]
     },
     "status": {
       "type": "string"
@@ -302,7 +342,7 @@
       "type": "string"
     },
     "time_matched": {
-      "type": "null"
+      "type": ["string", "null"]
     },
     "time_updated": {
       "type": "string"
@@ -417,7 +457,7 @@
                           "type": "string"
                         },
                         "address_approximated": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         },
                         "country_code": {
                           "type": "string"
@@ -432,7 +472,7 @@
                           "type": "string"
                         },
                         "original_address": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         },
                         "postal_code": {
                           "type": "string"
@@ -468,13 +508,13 @@
                           }
                         },
                         "uid": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         },
                         "wait_time": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         },
                         "working_calendar": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         }
                       }
                     }
@@ -586,7 +626,7 @@
                           "type": "string"
                         },
                         "address_approximated": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         },
                         "country_code": {
                           "type": "string"
@@ -601,10 +641,10 @@
                           "type": "string"
                         },
                         "original_address": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         },
                         "postal_code": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         },
                         "postal_code_bare": {
                           "type": "string"
@@ -637,13 +677,13 @@
                           }
                         },
                         "uid": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         },
                         "wait_time": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         },
                         "working_calendar": {
-                          "type": "null"
+                          "type": ["string", "null"]
                         }
                       }
                     }
@@ -679,40 +719,40 @@
           "type": "object",
           "properties": {
             "accept_by_user": {
-              "type": "null"
+              "type": ["string", "null"]
             },
             "baseline_rate": {
-              "type": "null"
+              "type": ["number", "null"]
             },
             "best_bid_amount": {
-              "type": "null"
+              "type": ["number", "null"]
             },
             "bid_to_reserve_amount": {
-              "type": "null"
+              "type": ["number", "null"]
             },
             "criticality": {
-              "type": "null"
+              "type": ["number", "null"]
             },
             "display_name": {
-              "type": "null"
+              "type": ["string", "null"]
             },
             "match_price_per_meter": {
               "type": "number"
             },
             "predicted_price": {
-              "type": "null"
+              "type": ["number", "null"]
             },
             "predicted_response_time": {
-              "type": "null"
+              "type": ["string", "null"]
             },
             "pricing_hints": {
-              "type": "null"
+              "type": ["string", "null"]
             },
             "reserve_price": {
-              "type": "null"
+              "type": ["number", "null"]
             },
             "time_expires": {
-              "type": "null"
+              "type": ["string", "null"]
             },
             "uid": {
               "type": "string"
@@ -784,7 +824,7 @@
           }
         },
         "robot": {
-          "type": "null"
+          "type": ["string", "null"]
         },
         "services_required": {
           "type": "object",
