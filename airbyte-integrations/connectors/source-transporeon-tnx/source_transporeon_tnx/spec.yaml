@@ -32,7 +32,7 @@ connectionSpecification:
       airbyte_secret: true
       order: 3
     time_offset:
-      title: start_time_min offset in hours
+      title: expiry_max offset in hours
       type: integer
-      description: Offset for earliest start time of a tender trip
+      description: Offset for latest expiry time of a tender trip, only in effect on incremental sync
       order: 4

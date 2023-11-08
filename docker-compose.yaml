@@ -50,6 +50,8 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
     volumes:
       - db:/var/lib/postgresql/data
+    ports:
+      - 5432
     networks:
       - airbyte_internal
   worker:

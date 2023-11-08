@@ -4,7 +4,7 @@
 import json
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from datetime import datetime
+import datetime as dt
 from dateutil.relativedelta import relativedelta
 
 import requests
@@ -77,32 +77,32 @@ class IncrementalTransporeonInsightsStream(TransporeonTnxStream, IncrementalMixi
 
     state_checkpoint_interval = None
     primary_key = None
-    date_format = "%Y-%m-%dT%H:%M:%SZ"
+    date_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
     @property
     def cursor_field(self) -> str:
-        return "start_time_min"
+        return "expiry_min"
 
     @property
     def state(self) -> Mapping[str, Any]:
-        return {self.cursor_field: datetime.utcnow().strftime(self.date_format)}
+        return {self.cursor_field: dt.datetime.now(dt.timezone.utc).isoformat(timespec='microseconds')}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(value[self.cursor_field], self.date_format)
+        self._cursor_value = dt.datetime.strptime(value[self.cursor_field], self.date_format)
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
-        start_time_min = {self.cursor_field: (self._cursor_value - relativedelta(hours=self.offset)).strftime(self.date_format)}\
+        expiry_min = {self.cursor_field: (self._cursor_value - relativedelta(hours=self.offset)).isoformat(timespec='microseconds')}\
             if self._cursor_value else {}
 
         return {
             "size": "100",
             "sort_type": "time_created.desc",
             **next_page_token,
-            **start_time_min
+            **expiry_min
         }
 
 
