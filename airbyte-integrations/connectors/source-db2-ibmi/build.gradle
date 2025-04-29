@@ -9,7 +9,7 @@ airbyteJavaConnector {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.db2.Db2Source'
+    mainClass = 'io.airbyte.integrations.source.ibmi.Db2IBMiSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
