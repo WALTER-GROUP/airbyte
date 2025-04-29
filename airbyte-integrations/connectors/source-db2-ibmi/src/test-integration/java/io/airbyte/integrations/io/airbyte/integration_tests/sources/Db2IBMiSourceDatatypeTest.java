@@ -83,15 +83,15 @@ public class Db2IBMiSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     return "TEST";
   }
 
-  @Override
-  protected String getIdColumnName() {
-    return "ID";
-  }
+//  @Override
+//  protected String getIdColumnName() {
+//    return "ID";
+//  }
 
-  @Override
-  protected String getTestColumnName() {
-    return "TEST_COLUMN";
-  }
+//  @Override
+//  protected String getTestColumnName() {
+//    return "TEST_COLUMN";
+//  }
 
   @Override
   protected void initTests() {

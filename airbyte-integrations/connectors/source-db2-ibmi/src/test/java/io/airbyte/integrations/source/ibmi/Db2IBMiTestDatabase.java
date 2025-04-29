@@ -30,10 +30,10 @@ public class Db2IBMiTestDatabase extends
     return container.getJdbcUrl();
   }
 
-  @Override
-  public String getUserName() {
-    return container.getUsername();
-  }
+//  @Override
+//  public String getUserName() {
+//    return container.getUsername();
+//  }
 
   @Override
   public String getPassword() {

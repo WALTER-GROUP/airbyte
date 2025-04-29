@@ -112,10 +112,10 @@ public class Db2IBMiSource extends AbstractJdbcSource<JDBCType> implements Sourc
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
-  @Override
-  protected String getCountColumnName() {
-    return "RECORD_COUNT";
-  }
+//  @Override
+//  protected String getCountColumnName() {
+//    return "RECORD_COUNT";
+//  }
 
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
     return connection -> connection.prepareStatement(
