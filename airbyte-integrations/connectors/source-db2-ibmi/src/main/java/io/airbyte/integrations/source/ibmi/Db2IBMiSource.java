@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
@@ -30,6 +31,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.airbyte.protocol.models.CommonField;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,11 +40,13 @@ import org.slf4j.LoggerFactory;
 public class Db2IBMiSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2IBMiSource.class);
-  public static final String DRIVER_CLASS = DatabaseDriver.DB2.getDriverClassName();
+  public static final String DRIVER_CLASS = DatabaseDriver.AS400.getDriverClassName();
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
+  private String schema;
 
   public Db2IBMiSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new Db2IBMiSourceOperations());
@@ -56,7 +61,7 @@ public class Db2IBMiSource extends AbstractJdbcSource<JDBCType> implements Sourc
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.DB2.getUrlFormatString(),
+    final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.AS400.getUrlFormatString(),
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asInt(),
         config.get("db").asText()));
@@ -66,6 +71,8 @@ public class Db2IBMiSource extends AbstractJdbcSource<JDBCType> implements Sourc
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
         .build());
+
+    schema = config.get("db").asText();
 
     // assume ssl if not explicitly mentioned.
     final var additionalParams = obtainConnectionOptions(config.get(JdbcUtils.ENCRYPTION_KEY));
@@ -90,8 +97,14 @@ public class Db2IBMiSource extends AbstractJdbcSource<JDBCType> implements Sourc
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
-        "NULLID", "SYSCAT", "SQLJ", "SYSFUN", "SYSIBM", "SYSIBMADM", "SYSIBMINTERNAL", "SYSIBMTS",
-        "SYSPROC", "SYSPUBLIC", "SYSSTAT", "SYSTOOLS");
+        "NULLID", "SQLJ", "SYSFUN", "SYSIBM", "QSYS2", "QSYS", "DB2QP",
+        "SYSPROC", "SYSPUBLIC", "SYSTOOLS", "INFORMATION_SCHEMA");
+  }
+
+  @Override
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    LOGGER.debug("Discovering schema: {}", schema);
+    return super.discoverInternal(database, schema);
   }
 
   @Override
@@ -112,20 +125,26 @@ public class Db2IBMiSource extends AbstractJdbcSource<JDBCType> implements Sourc
     return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
-//  @Override
-//  protected String getCountColumnName() {
-//    return "RECORD_COUNT";
-//  }
-
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges() {
-    return connection -> connection.prepareStatement(
-        "SELECT DISTINCT OBJECTNAME, OBJECTSCHEMA FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT'");
+    return connection -> connection.prepareStatement(String.format(
+            """
+                SELECT DISTINCT
+                        auth.TABLE_NAME,
+                        auth.TABLE_SCHEMA
+                  FROM QSYS2.SYSTABAUTH auth
+                  LEFT JOIN QSYS2.TABLES tables ON
+                      auth.TABLE_NAME = tables.TABLE_NAME
+                WHERE auth.SYSTEM_TABLE_SCHEMA = '%s'
+                  AND auth.PRIVILEGE_TYPE = 'SELECT'
+                  AND auth.GRANTEE IN (USER, 'PUBLIC', 'PUBLIC*')
+                  AND tables.TABLE_TYPE = 'BASE TABLE'
+                """, schema));
   }
 
   private JdbcPrivilegeDto getPrivilegeDto(final JsonNode jsonNode) {
     return JdbcPrivilegeDto.builder()
-        .schemaName(jsonNode.get("OBJECTSCHEMA").asText().trim())
-        .tableName(jsonNode.get("OBJECTNAME").asText())
+        .schemaName(jsonNode.get("TABLE_SCHEMA").asText().trim())
+        .tableName(jsonNode.get("TABLE_NAME").asText())
         .build();
   }
 
