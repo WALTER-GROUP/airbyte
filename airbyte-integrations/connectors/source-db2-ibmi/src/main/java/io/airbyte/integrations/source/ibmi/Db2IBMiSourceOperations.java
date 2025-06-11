@@ -96,7 +96,7 @@ public class Db2IBMiSourceOperations extends JdbcSourceOperations {
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
-    node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
+    node.put(columnName, timestamp != null ? DateTimeConverter.convertToTimestamp(timestamp) : null);
   }
 
   @Override
