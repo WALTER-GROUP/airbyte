@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -78,9 +79,77 @@ public class Db2IBMiSourceOperations extends JdbcSourceOperations {
                            final int index) {
     try {
       final double value = resultSet.getDouble(index);
-      node.put(columnName, value);
+      if (resultSet.wasNull()) {
+        node.put(columnName, (Double) null);
+      } else {
+        node.put(columnName, value);
+      }
     } catch (final SQLException e) {
       node.put(columnName, (Double) null);
+    }
+  }
+
+  @Override
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+    final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
+    final String columnName = resultSet.getMetaData().getColumnName(colIndex);
+    final JDBCType columnType = JDBCType.valueOf(columnTypeInt);
+
+    // Handle numeric types with explicit wasNull() checks to fix AS400 JDBC driver quirk
+    // where primitive getters return 0 instead of throwing for NULL values
+    switch (columnType) {
+      case TINYINT, SMALLINT:
+        final short shortValue = resultSet.getShort(colIndex);
+        if (resultSet.wasNull()) {
+          json.put(columnName, (Short) null);
+        } else {
+          json.put(columnName, shortValue);
+        }
+        break;
+      case INTEGER:
+        final int intValue = resultSet.getInt(colIndex);
+        if (resultSet.wasNull()) {
+          json.put(columnName, (Integer) null);
+        } else {
+          json.put(columnName, intValue);
+        }
+        break;
+      case BIGINT:
+        final long longValue = resultSet.getLong(colIndex);
+        if (resultSet.wasNull()) {
+          json.put(columnName, (Long) null);
+        } else {
+          json.put(columnName, longValue);
+        }
+        break;
+      case FLOAT, DOUBLE:
+        final double doubleValue = resultSet.getDouble(colIndex);
+        if (resultSet.wasNull()) {
+          json.put(columnName, (Double) null);
+        } else {
+          json.put(columnName, doubleValue);
+        }
+        break;
+      case REAL:
+        final float floatValue = resultSet.getFloat(colIndex);
+        if (resultSet.wasNull()) {
+          json.put(columnName, (Float) null);
+        } else {
+          json.put(columnName, floatValue);
+        }
+        break;
+      case NUMERIC, DECIMAL:
+        final BigDecimal decimalValue = resultSet.getBigDecimal(colIndex);
+        if (resultSet.wasNull()) {
+          json.put(columnName, (BigDecimal) null);
+        } else {
+          json.put(columnName, decimalValue);
+        }
+        break;
+      default:
+        // For all other types, delegate to parent implementation
+        super.copyToJsonField(resultSet, colIndex, json);
+        break;
     }
   }
 
@@ -108,27 +177,20 @@ public class Db2IBMiSourceOperations extends JdbcSourceOperations {
   @Override
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     final LocalDate date = LocalDate.parse(value);
-    preparedStatement.setDate(parameterIndex, Date.valueOf(date));
+  preparedStatement.setDate(parameterIndex, Date.valueOf(date));
   }
 
   @Override
   public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
-    switch (jdbcType) {
-      case SMALLINT, INTEGER, BIGINT:
-        return JsonSchemaType.INTEGER;
-      case DOUBLE, DECIMAL, NUMERIC, REAL:
-        return JsonSchemaType.NUMBER;
-      case DATE:
-        return JsonSchemaType.STRING_DATE;
-      case BLOB, BINARY, VARBINARY:
-        return JsonSchemaType.STRING_BASE_64;
-      case TIME:
-        return JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
-      case TIMESTAMP:
-        return JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
-      default:
-        return super.getAirbyteType(jdbcType);
-    }
+      return switch (jdbcType) {
+          case SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
+          case DOUBLE, DECIMAL, NUMERIC, REAL -> JsonSchemaType.NUMBER;
+          case DATE -> JsonSchemaType.STRING_DATE;
+          case BLOB, BINARY, VARBINARY -> JsonSchemaType.STRING_BASE_64;
+          case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+          case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+          default -> super.getAirbyteType(jdbcType);
+      };
   }
 
 }
