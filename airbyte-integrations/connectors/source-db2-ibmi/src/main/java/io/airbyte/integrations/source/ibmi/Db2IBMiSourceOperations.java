@@ -47,18 +47,15 @@ public class Db2IBMiSourceOperations extends JdbcSourceOperations {
 
   private void setFields(final ResultSet queryContext, final int index, final ObjectNode jsonNode) throws SQLException {
     try {
-      queryContext.getObject(index);
-      if (!queryContext.wasNull()) {
-        copyToJsonField(queryContext, index, jsonNode);
-      }
+      copyToJsonField(queryContext, index, jsonNode);
     } catch (final SQLException e) {
       if (DB2_UNIQUE_NUMBER_TYPES.contains(queryContext.getMetaData().getColumnTypeName(index))) {
         db2UniqueTypes(queryContext, index, jsonNode);
       } else {
-        throw new SQLException(e.getCause());
+        throw new SQLException("Failed to process column at index " + index, e);
       }
     } catch (NullPointerException e) {
-      //the statement !queryContext.wasNull() returns false for Date columns even if they are null
+      // AS400 driver may throw NullPointerException when accessing NULL DATE columns
       if (!queryContext.getMetaData().getColumnTypeName(index).equals("DATE") && queryContext.getDate(index) != null){
         throw e;
       }
@@ -98,58 +95,29 @@ public class Db2IBMiSourceOperations extends JdbcSourceOperations {
     // Handle numeric types with explicit wasNull() checks to fix AS400 JDBC driver quirk
     // where primitive getters return 0 instead of throwing for NULL values
     switch (columnType) {
-      case TINYINT, SMALLINT:
-        final short shortValue = resultSet.getShort(colIndex);
-        if (resultSet.wasNull()) {
-          json.put(columnName, (Short) null);
-        } else {
-          json.put(columnName, shortValue);
+      case TINYINT, SMALLINT -> putNumericWithNullCheck(json, columnName, resultSet.getShort(colIndex), resultSet.wasNull());
+      case INTEGER -> putNumericWithNullCheck(json, columnName, resultSet.getInt(colIndex), resultSet.wasNull());
+      case BIGINT -> putNumericWithNullCheck(json, columnName, resultSet.getLong(colIndex), resultSet.wasNull());
+      case FLOAT, DOUBLE -> putNumericWithNullCheck(json, columnName, resultSet.getDouble(colIndex), resultSet.wasNull());
+      case REAL -> putNumericWithNullCheck(json, columnName, resultSet.getFloat(colIndex), resultSet.wasNull());
+      case NUMERIC, DECIMAL -> putNumericWithNullCheck(json, columnName, resultSet.getBigDecimal(colIndex), resultSet.wasNull());
+      default -> super.copyToJsonField(resultSet, colIndex, json);
+    }
+  }
+
+  private void putNumericWithNullCheck(final ObjectNode json, final String columnName, final Number value, final boolean wasNull) {
+    if (wasNull) {
+      json.putNull(columnName);
+    } else {
+        switch (value) {
+            case Short i -> json.put(columnName, i);
+            case Integer i -> json.put(columnName, i);
+            case Long l -> json.put(columnName, l);
+            case Float v -> json.put(columnName, v);
+            case Double v -> json.put(columnName, v);
+            case BigDecimal bigDecimal -> json.put(columnName, bigDecimal);
+            default -> json.put(columnName, value.toString());
         }
-        break;
-      case INTEGER:
-        final int intValue = resultSet.getInt(colIndex);
-        if (resultSet.wasNull()) {
-          json.put(columnName, (Integer) null);
-        } else {
-          json.put(columnName, intValue);
-        }
-        break;
-      case BIGINT:
-        final long longValue = resultSet.getLong(colIndex);
-        if (resultSet.wasNull()) {
-          json.put(columnName, (Long) null);
-        } else {
-          json.put(columnName, longValue);
-        }
-        break;
-      case FLOAT, DOUBLE:
-        final double doubleValue = resultSet.getDouble(colIndex);
-        if (resultSet.wasNull()) {
-          json.put(columnName, (Double) null);
-        } else {
-          json.put(columnName, doubleValue);
-        }
-        break;
-      case REAL:
-        final float floatValue = resultSet.getFloat(colIndex);
-        if (resultSet.wasNull()) {
-          json.put(columnName, (Float) null);
-        } else {
-          json.put(columnName, floatValue);
-        }
-        break;
-      case NUMERIC, DECIMAL:
-        final BigDecimal decimalValue = resultSet.getBigDecimal(colIndex);
-        if (resultSet.wasNull()) {
-          json.put(columnName, (BigDecimal) null);
-        } else {
-          json.put(columnName, decimalValue);
-        }
-        break;
-      default:
-        // For all other types, delegate to parent implementation
-        super.copyToJsonField(resultSet, colIndex, json);
-        break;
     }
   }
 
