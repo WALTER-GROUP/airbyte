@@ -1,0 +1,51 @@
+name: Publish Java CDK
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'airbyte-cdk/java/airbyte-cdk/**'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Build only, do not publish'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-cdk:
+    name: Publish Java CDK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Read CDK version
+        run: |
+          VERSION=$(cat airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties | grep version= | cut -d= -f2)
+          echo "CDK_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "CDK version: $VERSION"
+
+      - name: Build Java CDK
+        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:cdkBuild
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to GitHub Packages
+        if: inputs.dry-run != true
+        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:cdkPublish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

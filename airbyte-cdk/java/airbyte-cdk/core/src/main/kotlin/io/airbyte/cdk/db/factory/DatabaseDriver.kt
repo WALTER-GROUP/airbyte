@@ -11,6 +11,7 @@ enum class DatabaseDriver(val driverClassName: String, val urlFormatString: Stri
         "jdbc:databricks://%s:%s;HttpPath=%s;SSL=1;UserAgentEntry=Airbyte"
     ),
     DB2("com.ibm.db2.jcc.DB2Driver", "jdbc:db2://%s:%d/%s"),
+    AS400("com.ibm.as400.access.AS400JDBCDriver", "jdbc:as400://%s:%d/%s"),
     STARBURST("io.trino.jdbc.TrinoDriver", "jdbc:trino://%s:%s/%s?SSL=true&source=airbyte"),
     MARIADB("org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s"),
     MSSQLSERVER(
