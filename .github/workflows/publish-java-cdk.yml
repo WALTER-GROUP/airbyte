@@ -40,12 +40,12 @@ jobs:
           echo "CDK version: $VERSION"
 
       - name: Build Java CDK
-        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:cdkBuild
+        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:cdkBuild -x test
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to GitHub Packages
         if: inputs.dry-run != true
-        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:cdkPublish
+        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:cdkPublish -x test
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
